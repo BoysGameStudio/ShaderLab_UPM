@@ -1,0 +1,21 @@
+{
+    "name": "com.boysgame.shaderlab",
+    "displayName": "Shader Lab",
+    "version": "0.0.1",
+    "unity": "2023.1",
+    "description": "",
+    "author": {
+        "name": "Boys",
+        "url": ""
+    },
+    "keywords": [
+    ],
+    "category": "Unity",
+    "samples": [
+        {
+            "displayName": "Common Meshes",
+            "description": "",
+            "path": "Samples~/Meshes"
+        }
+    ]
+}
