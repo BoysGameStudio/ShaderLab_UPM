@@ -137,64 +137,6 @@ namespace BoysGameStudio.ShaderLab.Renderer
                 }
             }
 
-            [Obsolete("Use RecordRenderGraph path.")]
-            public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
-            {
-                ConfigureMaterial();
-                renderPassEvent = _settings.renderPassEvent;
-            }
-
-            [Obsolete("Use RecordRenderGraph path.")]
-            public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
-            {
-                if (_outlineMaterial == null)
-                {
-                    return;
-                }
-
-                var camera = renderingData.cameraData.camera;
-                if (!ShouldRenderForCamera(camera))
-                {
-                    return;
-                }
-
-                var depthDesc = CreateRendererListDesc(renderingData.cullResults, camera, _depthOnlyMaterial);
-                var maskDesc = CreateMaskRendererListDesc(renderingData.cullResults, camera);
-                var outlineDescRev = CreateRendererListDesc(renderingData.cullResults, camera, _outlineMaterial);
-                outlineDescRev.overrideMaterialPassIndex = _settings.debugOverlay ? 3 : 1;
-                var outlineDescFwd = CreateRendererListDesc(renderingData.cullResults, camera, _outlineMaterial);
-                outlineDescFwd.overrideMaterialPassIndex = _settings.debugOverlay ? 4 : 2;
-                var depthList = context.CreateRendererList(depthDesc);
-                var maskList = context.CreateRendererList(maskDesc);
-                var outlineListRev = context.CreateRendererList(outlineDescRev);
-                var outlineListFwd = context.CreateRendererList(outlineDescFwd);
-                CommandBuffer cmd = CommandBufferPool.Get("SceneTimelineOutline");
-                try
-                {
-                    cmd.SetGlobalFloat(UseReversedZId, GetUseReversedZFlag());
-                    cmd.SetGlobalFloat(ThicknessSpaceId, Mathf.Clamp01(_settings.thicknessSpace));
-                    cmd.SetGlobalFloat(UsePaletteAlphaId, _settings.usePaletteAlpha ? 1f : 0f);
-                    cmd.SetGlobalFloat(SilhouetteThresholdId, Mathf.Clamp01(_settings.silhouetteThreshold));
-                    cmd.SetGlobalFloat(SilhouetteFeatherId, Mathf.Clamp01(_settings.silhouetteFeather));
-                    cmd.SetGlobalFloat(EdgePowerId, Mathf.Max(0f, _settings.edgePower));
-
-                    if (_depthOnlyMaterial != null)
-                    {
-                        cmd.DrawRendererList(depthList);
-                    }
-                    // Mask then outlines
-                    cmd.DrawRendererList(maskList);
-                    cmd.DrawRendererList(outlineListRev);
-                    cmd.DrawRendererList(outlineListFwd);
-
-                    context.ExecuteCommandBuffer(cmd);
-                }
-                finally
-                {
-                    CommandBufferPool.Release(cmd);
-                }
-            }
-
             public override void OnCameraCleanup(CommandBuffer cmd) { }
 
 #if UNITY_2023_3_OR_NEWER
